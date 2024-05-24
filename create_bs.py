@@ -2,7 +2,6 @@ import regex as re
 import sys
 from pptx import Presentation
 
-
 books = {
   "kejadian": 1,
   "keluaran": 2,
@@ -72,20 +71,20 @@ books = {
   "wahyu": 66
 }
 
+regexflags=re.I|re.M
 
 def extractBible(text):
-    allBiblePattern = r"((?<=\\n|\s|\')(i{0,2}\s)?[a-z]+)\s?([0-9]+\s?\:\s?([0-9]+(\-|\,|(a|b))*)*)(\s?[0-9]+\s?\:\s?([0-9]+(\-|\,|(a|b))*)*)*"
-    bookPattern = r"^(?!kj|pkj)[a-z\s]+(?=\s)"
-    chapterPattern = r"\d+(?=\s?\:)"
-    versePattern = r"(?<=\:\s?)[\d]+"
-    flags=re.I|re.M
+    allBiblePattern = r"((?<=\\n|\s|\')(i{0,2}\s)?[a-z]+)\s*([0-9]+\s*\:\s*([0-9]+(\-|\,|(a|b|\:|\s))*)*)"
+    bookPattern = r"^(?!kj|pkj)[a-z\s]+(?=\s*)"
+    chapterPattern = r"\d+(?=\s*\:)"
+    versePattern = r"(?<=\:\s*)[\d]+"
 
-    raw_data = re.search(allBiblePattern, str(text), flags=flags)
+    raw_data = re.search(allBiblePattern, str(text), flags=regexflags)
     if raw_data is not None:
         raw_data = raw_data.group().strip()
-        book = re.search(bookPattern, raw_data, flags=flags)
-        chapters = re.findall(chapterPattern, raw_data, flags=flags)
-        verses = re.findall(versePattern, raw_data, flags=flags)
+        book = re.search(bookPattern, raw_data, flags=regexflags)
+        chapters = re.findall(chapterPattern, raw_data, flags=regexflags)
+        verses = re.findall(versePattern, raw_data, flags=regexflags)
         if book is not None and verses is not None and chapters is not None:
             return {
                 'book': book.group().lower().strip(),
@@ -95,8 +94,8 @@ def extractBible(text):
         
     return None
 
-def createBs(bibleList):
-    bsFile = open('test.prg', "w+")
+def createBs(filename, bibleList):
+    bsFile = open('{title}.prg'.format(title=filename), "w+")
     bsFile.write("[Programs]\n")
     for i, data in enumerate(bibleList):
         bookIndex = books.get(data['book'])
@@ -117,19 +116,31 @@ def main():
     if len(sys.argv) < 2:
         return print("Please provide .pptx file\nExample: python3 create_bs.py ./test.pptx")
     
-    ppt = Presentation(sys.argv[1])
     bibleList = []
+    ppt = Presentation(sys.argv[1])
+    bsFileName = re.search(r"\d+\s*[a-z]+\s*\d+", sys.argv[1], flags=regexflags)
+    
+    if bsFileName is not None:
+        bsFileName = bsFileName.group()
+    else:
+        bsFileName = "untitled_bs"
 
-    # Looping through each slide in ppt and scanning all bible
-    for slide in ppt.slides:
-        for shape in slide.shapes:
-            if not shape.has_text_frame:
-                continue
-            data = extractBible(repr(shape.text)) # using repr to passing raw text
-            if data is not None:
-                bibleList.append(data)
-                
-    # Creating bibleshow from list of bible   
-    createBs(bibleList)
+    try:
+        # Looping through each slide in ppt and scanning all bible
+        for slide in ppt.slides:
+            for shape in slide.shapes:
+                if not shape.has_text_frame:
+                    continue
+                data = extractBible(repr(shape.text)) # using repr to passing raw text
+                if data is not None:
+                    bibleList.append(data)
+        
+        if len(bibleList) == 0:
+            return print("No bible found in ppt file")
+
+        # Creating bibleshow from list of bible
+        createBs(bsFileName, bibleList)
+    except Exception as e:
+        print("An error occured: {error}".format(error=e))
 
 main()
