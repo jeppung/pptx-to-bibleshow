@@ -120,16 +120,19 @@ def main():
     bsFileName = re.search(r"\d+\s*[a-z]+\s*\d+", sys.argv[1], flags=regexflags).group()
     bibleList = []
 
-    # Looping through each slide in ppt and scanning all bible
-    for slide in ppt.slides:
-        for shape in slide.shapes:
-            if not shape.has_text_frame:
-                continue
-            data = extractBible(repr(shape.text)) # using repr to passing raw text
-            if data is not None:
-                bibleList.append(data)
-                
-    # Creating bibleshow from list of bible   
-    createBs(bsFileName, bibleList)
+    try:
+        # Looping through each slide in ppt and scanning all bible
+        for slide in ppt.slides:
+            for shape in slide.shapes:
+                if not shape.has_text_frame:
+                    continue
+                data = extractBible(repr(shape.text)) # using repr to passing raw text
+                if data is not None:
+                    bibleList.append(data)
+                    
+        # Creating bibleshow from list of bible   
+        createBs(bsFileName, bibleList)
+    except Exception as e:
+        print("An error occured: {error}".format(error=e))
 
 main()
