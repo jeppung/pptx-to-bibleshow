@@ -116,9 +116,14 @@ def main():
     if len(sys.argv) < 2:
         return print("Please provide .pptx file\nExample: python3 create_bs.py ./test.pptx")
     
-    ppt = Presentation(sys.argv[1])
-    bsFileName = re.search(r"\d+\s*[a-z]+\s*\d+", sys.argv[1], flags=regexflags).group()
     bibleList = []
+    ppt = Presentation(sys.argv[1])
+    bsFileName = re.search(r"\d+\s*[a-z]+\s*\d+", sys.argv[1], flags=regexflags)
+    
+    if bsFileName is not None:
+        bsFileName = bsFileName.group()
+    else:
+        bsFileName = "untitled_bs"
 
     try:
         # Looping through each slide in ppt and scanning all bible
@@ -129,8 +134,11 @@ def main():
                 data = extractBible(repr(shape.text)) # using repr to passing raw text
                 if data is not None:
                     bibleList.append(data)
-                    
-        # Creating bibleshow from list of bible   
+        
+        if len(bibleList) == 0:
+            return print("No bible found in ppt file")
+
+        # Creating bibleshow from list of bible
         createBs(bsFileName, bibleList)
     except Exception as e:
         print("An error occured: {error}".format(error=e))
