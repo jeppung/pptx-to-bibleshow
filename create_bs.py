@@ -2,7 +2,6 @@ import regex as re
 import sys
 from pptx import Presentation
 
-
 books = {
   "kejadian": 1,
   "keluaran": 2,
@@ -72,20 +71,20 @@ books = {
   "wahyu": 66
 }
 
+regexflags=re.I|re.M
 
 def extractBible(text):
     allBiblePattern = r"((?<=\\n|\s|\')(i{0,2}\s)?[a-z]+)\s*([0-9]+\s*\:\s*([0-9]+(\-|\,|(a|b|\:|\s))*)*)"
     bookPattern = r"^(?!kj|pkj)[a-z\s]+(?=\s*)"
     chapterPattern = r"\d+(?=\s*\:)"
     versePattern = r"(?<=\:\s*)[\d]+"
-    flags=re.I|re.M
 
-    raw_data = re.search(allBiblePattern, str(text), flags=flags)
+    raw_data = re.search(allBiblePattern, str(text), flags=regexflags)
     if raw_data is not None:
         raw_data = raw_data.group().strip()
-        book = re.search(bookPattern, raw_data, flags=flags)
-        chapters = re.findall(chapterPattern, raw_data, flags=flags)
-        verses = re.findall(versePattern, raw_data, flags=flags)
+        book = re.search(bookPattern, raw_data, flags=regexflags)
+        chapters = re.findall(chapterPattern, raw_data, flags=regexflags)
+        verses = re.findall(versePattern, raw_data, flags=regexflags)
         if book is not None and verses is not None and chapters is not None:
             return {
                 'book': book.group().lower().strip(),
@@ -95,8 +94,8 @@ def extractBible(text):
         
     return None
 
-def createBs(bibleList):
-    bsFile = open('test.prg', "w+")
+def createBs(filename, bibleList):
+    bsFile = open('{title}.prg'.format(title=filename), "w+")
     bsFile.write("[Programs]\n")
     for i, data in enumerate(bibleList):
         bookIndex = books.get(data['book'])
@@ -118,6 +117,7 @@ def main():
         return print("Please provide .pptx file\nExample: python3 create_bs.py ./test.pptx")
     
     ppt = Presentation(sys.argv[1])
+    bsFileName = re.search(r"\d+\s*[a-z]+\s*\d+", sys.argv[1], flags=regexflags).group()
     bibleList = []
 
     # Looping through each slide in ppt and scanning all bible
@@ -130,6 +130,6 @@ def main():
                 bibleList.append(data)
                 
     # Creating bibleshow from list of bible   
-    createBs(bibleList)
+    createBs(bsFileName, bibleList)
 
 main()
