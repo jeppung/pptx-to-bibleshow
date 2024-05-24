@@ -74,10 +74,10 @@ books = {
 
 
 def extractBible(text):
-    allBiblePattern = r"((?<=\\n|\s|\')(i{0,2}\s)?[a-z]+)\s?([0-9]+\s?\:\s?([0-9]+(\-|\,|(a|b))*)*)(\s?[0-9]+\s?\:\s?([0-9]+(\-|\,|(a|b))*)*)*"
-    bookPattern = r"^(?!kj|pkj)[a-z\s]+(?=\s)"
-    chapterPattern = r"\d+(?=\s?\:)"
-    versePattern = r"(?<=\:\s?)[\d]+"
+    allBiblePattern = r"((?<=\\n|\s|\')(i{0,2}\s)?[a-z]+)\s*([0-9]+\s*\:\s*([0-9]+(\-|\,|(a|b|\:|\s))*)*)"
+    bookPattern = r"^(?!kj|pkj)[a-z\s]+(?=\s*)"
+    chapterPattern = r"\d+(?=\s*\:)"
+    versePattern = r"(?<=\:\s*)[\d]+"
     flags=re.I|re.M
 
     raw_data = re.search(allBiblePattern, str(text), flags=flags)
