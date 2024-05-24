@@ -114,7 +114,7 @@ def createBs(filename, bibleList):
 # App entry point
 def main():
     if len(sys.argv) < 2:
-        return print("Please provide .pptx file\nExample: python3 create_bs.py ./test.pptx")
+        return print("Please provide .pptx file\nExample: create_bs.exe ./test.pptx")
     
     bibleList = []
     ppt = Presentation(sys.argv[1])
